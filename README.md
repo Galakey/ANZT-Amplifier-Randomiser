@@ -1,5 +1,7 @@
 # ANZT Amplifier Randomiser
 
+###### Thrown together in one night, with very very limited experience in windows applications and tkinter. The code works and makes sense, but by god are the design and naming conventions a mess. I'll refactor this at some point :)
+
 Created for [ANZT 10 Summer](https://osu.ppy.sh/community/forums/topics/1699251) (an osu! Standard tournament), the ANZT Amplifier Randomiser is a desktop application that, with a list of player avatars, and a set of pre-created cards, will randomly assign 3 cards to each player, and output the data to a csv file.
 
 ## Setup
