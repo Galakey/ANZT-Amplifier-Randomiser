@@ -4,6 +4,7 @@ import customtkinter
 import os
 import csv
 from PIL import Image, ImageTk
+from playsound import playsound
 
 output = "./data/output.csv"
 background = "./data/stream_bg.png"
@@ -59,6 +60,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 
 app = customtkinter.CTk()  # create CTk window like you do with the Tk window
 app.geometry("1280x720")
+app.title("ANZT Amplifiers")
 
 background_image = tkinter.PhotoImage(file=background)
 background_label = tkinter.Label(image=background_image)
@@ -103,12 +105,14 @@ def clearCards():
 
 
 def buttonNext():
+    buttonSound()
     cur = players.nextPlayer()
     updateCurrentPlayer(cur)
     print(cur)
 
 
 def buttonPrev():
+    buttonSound()
     cur = players.prevPlayer()
     updateCurrentPlayer(cur)
     print(cur)
@@ -127,6 +131,7 @@ def updateCurrentPlayer(num):
 
 
 def buttonRoll():
+    buttonSound()
     total = list(range(1, amplifierCount))
     random.shuffle(total)
     amplifier1 = total[0]
@@ -168,9 +173,12 @@ def saveOutput():
         writer.writerow(header)
 
         for item in playerData:
-            playerFormatted = [item, playerData[item][0][:-4], playerData[item][1][0], playerData[item][1][1], playerData[item][1][2]]
+            playerFormatted = [item, playerData[item][0][:-4], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
             writer.writerow(playerFormatted)
 
+
+def buttonSound():
+    playsound("./data/button_sound.mp3")
 
 # Previous
 buttonImage = customtkinter.CTkImage(Image.open("./data/button_prev.png"), size=(106, 40))
