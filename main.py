@@ -5,6 +5,7 @@ import os
 import csv
 from PIL import Image, ImageTk
 from playsound import playsound
+import threading
 
 output = "./data/output.csv"
 background = "./data/stream_bg.png"
@@ -142,6 +143,7 @@ def buttonRoll():
     saveRoll(result)
     count = 1
     for i in result:
+        box = Image.open(f"./data/Box.png")
         image = Image.open(f"./data/amplifiers/{amplifierName[i]}")
         image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
         imageFinal = ImageTk.PhotoImage(image)
@@ -178,7 +180,8 @@ def saveOutput():
 
 
 def buttonSound():
-    playsound("./data/button_sound.mp3")
+    threading.Thread(target=playsound, args=("./data/button_sound.mp3",), daemon=True).start()
+
 
 # Previous
 buttonImage = customtkinter.CTkImage(Image.open("./data/button_prev.png"), size=(106, 40))
