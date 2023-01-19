@@ -84,12 +84,11 @@ currentPlayerIcon = currentPlayerIcon.resize((int(150), int(150)))
 currentPlayerIcon = ImageTk.PhotoImage(currentPlayerIcon)
 width, height = currentPlayerIcon.width(), currentPlayerIcon.height()
 label_playerIcon = tkinter.Label(app, bg="#10172d", width=width, height=height, image=currentPlayerIcon)
-label_playerIcon.place(x=250, y=35)
-
-font = ("Crimson Pro", 24)
+label_playerIcon.place(x=220, y=27)
+font = ("Crimson Pro", 16)
 
 label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][:-4], fg="white", font=font, anchor=tkinter.CENTER)
-label_playerName.place(x=255, y=190)
+label_playerName.place(x=230, y=198)
 
 
 def clearCards():
@@ -174,16 +173,19 @@ def saveOutput():
 
 
 # Previous
-button = customtkinter.CTkButton(master=app, text="Prev", command=buttonPrev)
-button.place(width=90, relx=0.12, rely=0.08, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_prev.png"), size=(106, 40))
+buttonPrev = customtkinter.CTkButton(master=app, command=buttonPrev, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
+buttonPrev.place(width=118, height=44, relx=0.1165, rely=0.07, anchor=tkinter.CENTER)
 
 # Next
-button = customtkinter.CTkButton(master=app, text="Next", command=buttonNext)
-button.place(width=90, relx=0.12, rely=0.18, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_next.png"), size=(106, 40))
+buttonNext = customtkinter.CTkButton(master=app, command=buttonNext, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
+buttonNext.place(width=118, height=44, relx=0.1165, rely=0.185, anchor=tkinter.CENTER)
 
 # Roll
-button = customtkinter.CTkButton(master=app, text="Roll", command=buttonRoll)
-button.place(width=90, relx=0.12, rely=0.28, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_roll.png"), size=(106, 40))
+buttonRoll = customtkinter.CTkButton(master=app, command=buttonRoll, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
+buttonRoll.place(width=118, height=44, relx=0.1165, rely=0.3, anchor=tkinter.CENTER)
 
 
 app.mainloop()
