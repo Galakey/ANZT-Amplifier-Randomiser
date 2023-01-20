@@ -6,9 +6,11 @@ import csv
 from PIL import Image, ImageTk
 from playsound import playsound
 import threading
+import time
 
 output = "./data/output.csv"
 background = "./data/stream_bg.png"
+bg_frames = len([name for name in os.listdir("./data/bg")])
 amplifierDir = "./data/amplifiers"
 playerDir = "./data/players"
 amplifierCount = len([name for name in os.listdir(amplifierDir)])
@@ -144,6 +146,8 @@ def buttonRoll():
     count = 1
     for i in result:
         box = Image.open(f"./data/Box.png")
+        box = box.resize((int(836 / 2.8), int(1077 / 2.8)))
+        boxFinal = ImageTk.PhotoImage(box)
         image = Image.open(f"./data/amplifiers/{amplifierName[i]}")
         image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
         imageFinal = ImageTk.PhotoImage(image)
@@ -157,6 +161,15 @@ def buttonRoll():
             label_image3.configure(image=imageFinal)
             label_image3.image = imageFinal
         count += 1
+
+
+def fadeImage(img1, img2, label):
+    alpha = 0
+    while 1.0 > alpha:
+        new_img = Image.blend(img1, img2, alpha)
+        alpha = alpha + 0.01
+        label.configure(image=new_img)
+        label.update()
 
 
 def saveRoll(amplifiers):
@@ -181,6 +194,26 @@ def saveOutput():
 
 def buttonSound():
     threading.Thread(target=playsound, args=("./data/button_sound.mp3",), daemon=True).start()
+
+
+background_image_frames = []
+
+
+for x in range(bg_frames):
+    background_image_frames.append(tkinter.PhotoImage(file=f"./data/bg/stars{x}.png"))
+
+
+def updateBg(frame):
+    while 1 != 0:
+        if frame >= bg_frames:
+            frame = 0
+        background_image_frame = background_image_frames[frame]
+        background_label.configure(image=background_image_frame)
+        time.sleep(0.03)
+        frame += 1
+
+
+threading.Thread(target=updateBg, args=(0,), daemon=True).start()
 
 
 # Previous
