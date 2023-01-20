@@ -111,14 +111,14 @@ def buttonNext():
     buttonSound()
     cur = players.nextPlayer()
     updateCurrentPlayer(cur)
-    print(cur)
+    print(f"Current Player: {playerName[cur][:-4]}, #{cur}")
 
 
 def buttonPrev():
     buttonSound()
     cur = players.prevPlayer()
     updateCurrentPlayer(cur)
-    print(cur)
+    print(f"Current Player: {playerName[cur][:-4]}, #{cur}")
 
 
 def updateCurrentPlayer(num):
@@ -173,9 +173,11 @@ def fadeImage(img1, img2, label):
 
 
 def saveRoll(amplifiers):
+    text = f"Player {playerName[players.getCurrentPlayer()][:-4]}, Amplifiers:"
     for x in amplifiers:
-        print(x)
+        text += f" {amplifierName[x][:-4]}"
         x = amplifierName[x][:-4]
+    print(text)
     playerData[players.getCurrentPlayer()] = [playerName[players.getCurrentPlayer() - 1], amplifiers]
     saveOutput()
 
@@ -191,6 +193,8 @@ def saveOutput():
             playerFormatted = [item, playerData[item][0][:-4], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
             writer.writerow(playerFormatted)
 
+    file.close()
+
 
 def buttonSound():
     threading.Thread(target=playsound, args=("./data/button_sound.mp3",), daemon=True).start()
@@ -199,8 +203,19 @@ def buttonSound():
 background_image_frames = []
 
 
-for x in range(bg_frames):
-    background_image_frames.append(tkinter.PhotoImage(file=f"./data/bg/stars{x}.png"))
+def loadAnimatedBg():
+    print("Processing animated background")
+    print("")
+    for x in range(bg_frames):
+        text = f"Loading frame {x - 1} of {bg_frames}"
+        print("\r", text, end="")
+        background_image_frames.append(tkinter.PhotoImage(file=f"./data/bg/stars{x}.png"))
+        time.sleep(0.005)
+    print("", end="\r")
+
+    print("Animated background loaded")
+    time.sleep(0.01)
+    threading.Thread(target=updateBg, args=(0,), daemon=True).start()
 
 
 def updateBg(frame):
@@ -213,7 +228,8 @@ def updateBg(frame):
         frame += 1
 
 
-threading.Thread(target=updateBg, args=(0,), daemon=True).start()
+threading.Thread(target=loadAnimatedBg, args=(), daemon=True).start()
+
 
 
 # Previous
