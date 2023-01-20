@@ -22,7 +22,9 @@ for card in os.listdir(amplifierDir):
     amplifierName.append(card)
 
 for player in os.listdir(playerDir):
-    playerName.append(player)
+    path = player
+    player = player.split(sep="$")
+    playerName.append([player[0], player[1][:-4], path])
 
 
 class Players:
@@ -84,16 +86,21 @@ label_image3 = tkinter.Label(app, bg="#10172d", width=width, height=height, imag
 label_image3.place(x=860, y=290)
 
 
-currentPlayerIcon = Image.open(f"./data/players/{playerName[0]}")
+currentPlayerIcon = Image.open(f"./data/players/{playerName[0][2]}")
 currentPlayerIcon = currentPlayerIcon.resize((int(150), int(150)))
 currentPlayerIcon = ImageTk.PhotoImage(currentPlayerIcon)
 width, height = currentPlayerIcon.width(), currentPlayerIcon.height()
+
 label_playerIcon = tkinter.Label(app, bg="#10172d", width=width, height=height, image=currentPlayerIcon)
 label_playerIcon.place(x=220, y=27)
-font = ("Crimson Pro", 16)
 
-label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][:-4], fg="white", font=font, anchor=tkinter.CENTER)
+font = ("Crimson Pro", 16)
+label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][0], fg="white", font=font, anchor=tkinter.CENTER)
 label_playerName.place(x=230, y=198)
+
+font_rank = ("Crimson Pro", 42)
+label_playerRank = tkinter.Label(app, width=2, height=1, bg="#10172d", text=playerName[0][1], fg="white", font=font_rank, anchor=tkinter.CENTER)
+label_playerRank.place(x=398, y=100)
 
 
 def clearCards():
@@ -109,21 +116,21 @@ def clearCards():
 
 def buttonNext():
     buttonSound()
-    cur = players.nextPlayer()
+    cur = players.nextPlayer() - 1
     updateCurrentPlayer(cur)
-    print(f"Current Player: {playerName[cur][:-4]}, #{cur}")
+    print(f"Current Player: {playerName[cur][0]}, #{cur}")
 
 
 def buttonPrev():
     buttonSound()
-    cur = players.prevPlayer()
+    cur = players.prevPlayer() - 1
     updateCurrentPlayer(cur)
-    print(f"Current Player: {playerName[cur][:-4]}, #{cur}")
+    print(f"Current Player: {playerName[cur][0]}, #{cur}")
 
 
 def updateCurrentPlayer(num):
-    newPlayer = playerName[num-1][:-4]
-    newPlayerIcon = Image.open(f"./data/players/{playerName[num-1]}")
+    newPlayer = playerName[num][0]
+    newPlayerIcon = Image.open(f"./data/players/{playerName[num][2]}")
     newPlayerIcon = newPlayerIcon.resize((int(150), int(150)))
     newPlayerIcon = ImageTk.PhotoImage(newPlayerIcon)
 
@@ -131,6 +138,7 @@ def updateCurrentPlayer(num):
     label_playerIcon.image = newPlayerIcon
 
     label_playerName.configure(text=newPlayer)
+    label_playerRank.configure(text=playerName[num][1])
 
 
 def buttonRoll():
@@ -173,24 +181,24 @@ def fadeImage(img1, img2, label):
 
 
 def saveRoll(amplifiers):
-    text = f"Player {playerName[players.getCurrentPlayer()][:-4]}, Amplifiers:"
+    text = f"Player {playerName[players.getCurrentPlayer() - 1][0]}, Amplifiers:"
     for x in amplifiers:
         text += f" {amplifierName[x][:-4]}"
         x = amplifierName[x][:-4]
     print(text)
-    playerData[players.getCurrentPlayer()] = [playerName[players.getCurrentPlayer() - 1], amplifiers]
+    playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], amplifiers]
     saveOutput()
 
 
 def saveOutput():
-    header = ["Player Num", "Player Name", "Amplifier #1" , "Amplifier #2", "Amplifier #3"]
+    header = ["Player Num", "Player Name", "Amplifier #1", "Amplifier #2", "Amplifier #3"]
     with open(output, "r+", newline='') as file:
         writer = csv.writer(file)
 
         writer.writerow(header)
 
         for item in playerData:
-            playerFormatted = [item, playerData[item][0][:-4], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
+            playerFormatted = [item, playerData[item][0], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
             writer.writerow(playerFormatted)
 
     file.close()

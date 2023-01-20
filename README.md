@@ -16,13 +16,14 @@ All self explanatory, next and prev navigate between viable players, and roll wi
 
 ## Change input
 
-Inside of the *data* directory are two folders, *amplifiers* and *players*. 
+Inside of the *data* directory are three folders, *amplifiers*, *players* and *bg*. 
 
 *Amplifiers* is a list of card images, of which the names are irrelevant. The current sizing is designed for 836x1077 cards.
 
-*Players* is a list of player avatars, all of which arenamed after the respective player. The current sizing is designed for 256x256 avatars.
+*Players* is a list of player avatars, all of which are named after the respective player, followed by <$>, and then a qualifier ranking number. The current sizing is designed for 256x256 avatars.
 
 Inside of *data* are two images, *stream_bg.png* and *Box.png*. The background is self explanatory, and the box is used to replace a card when cycling through players to create a blank screen. It doesn't look the best visually as tkinter doesn't support transparency, so solid colours were neccessary.
+A third folder called *bg* can be filled w ith a gif rendered as individual images, which will be loaded on launch and used as an animated background. 
 
 ## Changing resolution
 
