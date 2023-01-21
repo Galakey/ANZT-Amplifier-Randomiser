@@ -143,7 +143,7 @@ def updateCurrentPlayer(num):
 
 def buttonRoll():
     buttonSound()
-    total = list(range(1, amplifierCount))
+    total = list(range(0, amplifierCount))
     random.shuffle(total)
     amplifier1 = total[0]
     amplifier2 = total[1]
