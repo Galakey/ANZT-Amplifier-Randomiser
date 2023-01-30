@@ -24,7 +24,7 @@ for card in os.listdir(amplifierDir):
 for player in os.listdir(playerDir):
     path = player
     player = player.split(sep="$")
-    playerName.append([player[0], player[1][:-4], path])
+    playerName.append([player[1][:-4], player[0], path])
 
 
 class Players:
@@ -155,7 +155,6 @@ def buttonRoll():
     for i in result:
         box = Image.open(f"./data/Box.png")
         box = box.resize((int(836 / 2.8), int(1077 / 2.8)))
-        boxFinal = ImageTk.PhotoImage(box)
         image = Image.open(f"./data/amplifiers/{amplifierName[i]}")
         image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
         imageFinal = ImageTk.PhotoImage(image)
@@ -184,7 +183,6 @@ def saveRoll(amplifiers):
     text = f"Player {playerName[players.getCurrentPlayer() - 1][0]}, Amplifiers:"
     for x in amplifiers:
         text += f" {amplifierName[x][:-4]}"
-        x = amplifierName[x][:-4]
     print(text)
     playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], amplifiers]
     saveOutput()
@@ -236,8 +234,10 @@ def updateBg(frame):
         frame += 1
 
 
-threading.Thread(target=loadAnimatedBg, args=(), daemon=True).start()
-
+if bg_frames != 0:
+    threading.Thread(target=loadAnimatedBg, args=(), daemon=True).start()
+else:
+    print("No animated background detected, using static background.")
 
 
 # Previous
