@@ -6,9 +6,11 @@ import csv
 from PIL import Image, ImageTk
 from playsound import playsound
 import threading
+import time
 
 output = "./data/output.csv"
 background = "./data/stream_bg.png"
+bg_frames = len([name for name in os.listdir("./data/bg")])
 amplifierDir = "./data/amplifiers"
 playerDir = "./data/players"
 amplifierCount = len([name for name in os.listdir(amplifierDir)])
@@ -20,7 +22,9 @@ for card in os.listdir(amplifierDir):
     amplifierName.append(card)
 
 for player in os.listdir(playerDir):
-    playerName.append(player)
+    path = player
+    player = player.split(sep="$")
+    playerName.append([player[1][:-4], player[0], path])
 
 
 class Players:
@@ -82,16 +86,21 @@ label_image3 = tkinter.Label(app, bg="#10172d", width=width, height=height, imag
 label_image3.place(x=860, y=290)
 
 
-currentPlayerIcon = Image.open(f"./data/players/{playerName[0]}")
+currentPlayerIcon = Image.open(f"./data/players/{playerName[0][2]}")
 currentPlayerIcon = currentPlayerIcon.resize((int(150), int(150)))
 currentPlayerIcon = ImageTk.PhotoImage(currentPlayerIcon)
 width, height = currentPlayerIcon.width(), currentPlayerIcon.height()
+
 label_playerIcon = tkinter.Label(app, bg="#10172d", width=width, height=height, image=currentPlayerIcon)
 label_playerIcon.place(x=220, y=27)
-font = ("Crimson Pro", 16)
 
-label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][:-4], fg="white", font=font, anchor=tkinter.CENTER)
+font = ("Crimson Pro", 16)
+label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][0], fg="white", font=font, anchor=tkinter.CENTER)
 label_playerName.place(x=230, y=198)
+
+font_rank = ("Crimson Pro", 42)
+label_playerRank = tkinter.Label(app, width=2, height=1, bg="#10172d", text=playerName[0][1], fg="white", font=font_rank, anchor=tkinter.CENTER)
+label_playerRank.place(x=398, y=100)
 
 
 def clearCards():
@@ -107,21 +116,21 @@ def clearCards():
 
 def buttonNext():
     buttonSound()
-    cur = players.nextPlayer()
+    cur = players.nextPlayer() - 1
     updateCurrentPlayer(cur)
-    print(cur)
+    print(f"Current Player: {playerName[cur][0]}, #{cur}")
 
 
 def buttonPrev():
     buttonSound()
-    cur = players.prevPlayer()
+    cur = players.prevPlayer() - 1
     updateCurrentPlayer(cur)
-    print(cur)
+    print(f"Current Player: {playerName[cur][0]}, #{cur}")
 
 
 def updateCurrentPlayer(num):
-    newPlayer = playerName[num-1][:-4]
-    newPlayerIcon = Image.open(f"./data/players/{playerName[num-1]}")
+    newPlayer = playerName[num][0]
+    newPlayerIcon = Image.open(f"./data/players/{playerName[num][2]}")
     newPlayerIcon = newPlayerIcon.resize((int(150), int(150)))
     newPlayerIcon = ImageTk.PhotoImage(newPlayerIcon)
 
@@ -129,11 +138,12 @@ def updateCurrentPlayer(num):
     label_playerIcon.image = newPlayerIcon
 
     label_playerName.configure(text=newPlayer)
+    label_playerRank.configure(text=playerName[num][1])
 
 
 def buttonRoll():
     buttonSound()
-    total = list(range(1, amplifierCount))
+    total = list(range(0, amplifierCount))
     random.shuffle(total)
     amplifier1 = total[0]
     amplifier2 = total[1]
@@ -144,6 +154,7 @@ def buttonRoll():
     count = 1
     for i in result:
         box = Image.open(f"./data/Box.png")
+        box = box.resize((int(836 / 2.8), int(1077 / 2.8)))
         image = Image.open(f"./data/amplifiers/{amplifierName[i]}")
         image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
         imageFinal = ImageTk.PhotoImage(image)
@@ -159,28 +170,74 @@ def buttonRoll():
         count += 1
 
 
+def fadeImage(img1, img2, label):
+    alpha = 0
+    while 1.0 > alpha:
+        new_img = Image.blend(img1, img2, alpha)
+        alpha = alpha + 0.01
+        label.configure(image=new_img)
+        label.update()
+
+
 def saveRoll(amplifiers):
+    text = f"Player {playerName[players.getCurrentPlayer() - 1][0]}, Amplifiers:"
     for x in amplifiers:
-        print(x)
-        x = amplifierName[x][:-4]
-    playerData[players.getCurrentPlayer()] = [playerName[players.getCurrentPlayer() - 1], amplifiers]
+        text += f" {amplifierName[x][:-4]}"
+    print(text)
+    playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], amplifiers]
     saveOutput()
 
 
 def saveOutput():
-    header = ["Player Num", "Player Name", "Amplifier #1" , "Amplifier #2", "Amplifier #3"]
+    header = ["Player Num", "Player Name", "Amplifier #1", "Amplifier #2", "Amplifier #3"]
     with open(output, "r+", newline='') as file:
         writer = csv.writer(file)
 
         writer.writerow(header)
 
         for item in playerData:
-            playerFormatted = [item, playerData[item][0][:-4], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
+            playerFormatted = [item, playerData[item][0], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
             writer.writerow(playerFormatted)
+
+    file.close()
 
 
 def buttonSound():
     threading.Thread(target=playsound, args=("./data/button_sound.mp3",), daemon=True).start()
+
+
+background_image_frames = []
+
+
+def loadAnimatedBg():
+    print("Processing animated background")
+    print("")
+    for x in range(bg_frames):
+        text = f"Loading frame {x - 1} of {bg_frames}"
+        print("\r", text, end="")
+        background_image_frames.append(tkinter.PhotoImage(file=f"./data/bg/stars{x}.png"))
+        time.sleep(0.005)
+    print("", end="\r")
+
+    print("Animated background loaded")
+    time.sleep(0.01)
+    threading.Thread(target=updateBg, args=(0,), daemon=True).start()
+
+
+def updateBg(frame):
+    while 1 != 0:
+        if frame >= bg_frames:
+            frame = 0
+        background_image_frame = background_image_frames[frame]
+        background_label.configure(image=background_image_frame)
+        time.sleep(0.03)
+        frame += 1
+
+
+if bg_frames != 0:
+    threading.Thread(target=loadAnimatedBg, args=(), daemon=True).start()
+else:
+    print("No animated background detected, using static background.")
 
 
 # Previous
