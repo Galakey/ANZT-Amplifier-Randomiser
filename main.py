@@ -10,7 +10,10 @@ import time
 
 output = "./data/output.csv"
 background = "./data/stream_bg.png"
-bg_frames = len([name for name in os.listdir("./data/bg")])
+try:
+    bg_frames = len([name for name in os.listdir("./data/bg")])
+except FileNotFoundError as e:
+    bg_frames = 0
 amplifierDir = "./data/amplifiers"
 playerDir = "./data/players"
 amplifierCount = len([name for name in os.listdir(amplifierDir)])
