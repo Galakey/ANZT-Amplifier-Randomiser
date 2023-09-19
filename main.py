@@ -21,8 +21,18 @@ amplifierName = []
 playerName = []
 playerData = {}
 
-for card in os.listdir(amplifierDir):
-    amplifierName.append(card)
+activeDir = "./data/amplifiers/active"
+passiveDir = "./data/amplifiers/passive"
+activeCount = len([name for name in os.listdir(activeDir)])
+passiveCount = len([name for name in os.listdir(passiveDir)])
+activeName = []
+passiveName = []
+
+for card in os.listdir(activeDir):
+    activeName.append(card)
+
+for card in os.listdir(passiveDir):
+    passiveName.append(card)
 
 for player in os.listdir(playerDir):
     path = player
@@ -80,13 +90,16 @@ test1 = ImageTk.PhotoImage(image1)
 width, height = test1.width(), test1.height()
 
 label_image1 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image1.place(x=120, y=290)
+label_image1.place(x=20, y=290)
 
 label_image2 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image2.place(x=490, y=290)
+label_image2.place(x=320, y=290)
 
 label_image3 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image3.place(x=860, y=290)
+label_image3.place(x=655, y=290)
+
+label_image4 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
+label_image4.place(x=955, y=290)
 
 
 currentPlayerIcon = Image.open(f"./data/players/{playerName[0][2]}")
@@ -115,6 +128,9 @@ def clearCards():
     label_image2.image = clear
     label_image3.configure(image=clear)
     label_image3.image = clear
+    label_image4.configure(image=clear)
+    label_image4.image = clear
+
 
 
 def buttonNext():
@@ -144,35 +160,6 @@ def updateCurrentPlayer(num):
     label_playerRank.configure(text=playerName[num][1])
 
 
-def buttonRoll():
-    buttonSound()
-    total = list(range(0, amplifierCount))
-    random.shuffle(total)
-    amplifier1 = total[0]
-    amplifier2 = total[1]
-    amplifier3 = total[2]
-    result = [amplifier1, amplifier2, amplifier3]
-
-    saveRoll(result)
-    count = 1
-    for i in result:
-        box = Image.open(f"./data/Box.png")
-        box = box.resize((int(836 / 2.8), int(1077 / 2.8)))
-        image = Image.open(f"./data/amplifiers/{amplifierName[i]}")
-        image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
-        imageFinal = ImageTk.PhotoImage(image)
-        if count == 1:
-            label_image1.configure(image=imageFinal)
-            label_image1.image = imageFinal
-        elif count == 2:
-            label_image2.configure(image=imageFinal)
-            label_image2.image = imageFinal
-        elif count == 3:
-            label_image3.configure(image=imageFinal)
-            label_image3.image = imageFinal
-        count += 1
-
-
 def fadeImage(img1, img2, label):
     alpha = 0
     while 1.0 > alpha:
@@ -182,24 +169,70 @@ def fadeImage(img1, img2, label):
         label.update()
 
 
-def saveRoll(amplifiers):
+def buttonRoll():
+    buttonSound()
+    activeTotal = list(range(0, activeCount))
+    passiveTotal = list(range(0, passiveCount))
+    random.shuffle(activeTotal)
+    random.shuffle(passiveTotal)
+    active1 = activeTotal[0]
+    active2 = activeTotal[1]
+    passive1 = passiveTotal[0]
+    passive2 = passiveTotal[1]
+
+    activeResult = [active1, active2]
+    passiveResult = [passive1, passive2]
+
+    saveRoll(activeResult, passiveResult)
+
+    count = 1
+    for i in activeResult:
+        image = Image.open(f"./data/amplifiers/active/{activeName[i]}")
+        image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
+        imageFinal = ImageTk.PhotoImage(image)
+        if count == 1:
+            label_image1.configure(image=imageFinal)
+            label_image1.image = imageFinal
+        elif count == 2:
+            label_image2.configure(image=imageFinal)
+            label_image2.image = imageFinal
+        count += 1
+
+    count = 1
+    for i in passiveResult:
+        image = Image.open(f"./data/amplifiers/passive/{passiveName[i]}")
+        image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
+        imageFinal = ImageTk.PhotoImage(image)
+        if count == 1:
+            label_image3.configure(image=imageFinal)
+            label_image3.image = imageFinal
+        elif count == 2:
+            label_image4.configure(image=imageFinal)
+            label_image4.image = imageFinal
+        count += 1
+
+
+def saveRoll(active, passive):
     text = f"Player {playerName[players.getCurrentPlayer() - 1][0]}, Amplifiers:"
-    for x in amplifiers:
-        text += f" {amplifierName[x][:-4]}"
+    for x in active:
+        text += f" {activeName[x][:-4]}"
+    for x in passive:
+        text += f" {passiveName[x][:-4]}"
     print(text)
-    playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], amplifiers]
+    playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], active, passive]
     saveOutput()
 
 
 def saveOutput():
-    header = ["Player Num", "Player Name", "Amplifier #1", "Amplifier #2", "Amplifier #3"]
+    header = ["Player Num", "Player Name", "Active #1", "Active #2", "Passive #1", "Passive #2"]
     with open(output, "r+", newline='') as file:
         writer = csv.writer(file)
 
         writer.writerow(header)
 
         for item in playerData:
-            playerFormatted = [item, playerData[item][0], amplifierName[playerData[item][1][0]][:-4], amplifierName[playerData[item][1][1]][:-4], amplifierName[playerData[item][1][2]][:-4]]
+            print(playerData[item])
+            playerFormatted = [item, playerData[item][0], activeName[playerData[item][1][0]][:-4], activeName[playerData[item][1][1]][:-4], passiveName[playerData[item][2][0]][:-4], passiveName[playerData[item][2][1]][:-4]]
             writer.writerow(playerFormatted)
 
     file.close()
