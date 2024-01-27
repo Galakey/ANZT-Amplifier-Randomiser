@@ -8,69 +8,192 @@ from playsound import playsound
 import threading
 import time
 
-output = "./data/output.csv"
+outputPath = "./data/output.csv"
 background = "./data/stream_bg.png"
 try:
     bg_frames = len([name for name in os.listdir("./data/bg")])
 except FileNotFoundError as e:
     bg_frames = 0
+
+class Player:
+    def __init__(self, rank, name, icon):
+        self.name = name
+        self.rank = rank
+        self.icon = icon
+
+class Team:
+    def __init__(self, name, players: [], rank, matchBlock):
+        self.name = name
+        self.players = players
+        self.rank = rank
+        self.matchBlock = matchBlock
+
+    def __lt__(self, other):
+        return self.rank < other.rank
+
+choices = ["Silver", "Gold", "Prismatic"]
+class MatchBlock:
+    def __init__(self, ID):
+        self.ID = ID
+        self.amp1 = random.choice(choices)
+        self.amp2 = random.choice(choices)
+        self.amp3 = random.choice(choices)
+
+    def getAmps(self):
+        return [self.amp1, self.amp2, self.amp3]
+
+matchBlockA = MatchBlock("A")
+matchBlockB = MatchBlock("B")
+matchBlockC = MatchBlock("C")
+matchBlockD = MatchBlock("D")
+matchBlockE = MatchBlock("E")
+matchBlockF = MatchBlock("F")
+matchBlockG = MatchBlock("G")
+matchBlockH = MatchBlock("H")
+matchBlockI = MatchBlock("I")
+matchBlockJ = MatchBlock("J")
+matchBlockK = MatchBlock("K")
+matchBlockL = MatchBlock("L")
+matchBlockM = MatchBlock("M")
+matchBlockN = MatchBlock("N")
+matchBlockO = MatchBlock("O")
+matchBlockP = MatchBlock("P")
+
+matchBlocks = [matchBlockA, matchBlockB, matchBlockC, matchBlockD, matchBlockE,
+               matchBlockF, matchBlockG, matchBlockH, matchBlockI, matchBlockJ,
+               matchBlockK, matchBlockL, matchBlockM, matchBlockN, matchBlockO, matchBlockP]
+
+class MatchBlocks:
+    def __init__(self):
+        self.matchBlocks = matchBlocks
+
+    def getMatchBlock(self, ID):
+        for matchBlock in self.matchBlocks:
+            if matchBlock.ID == ID:
+                return matchBlock
+
+    def getAmps(self, ID):
+        for matchBlock in self.matchBlocks:
+            if matchBlock.ID == ID:
+                return matchBlock.getAmps()
+
+mb = MatchBlocks()
+
 amplifierDir = "./data/amplifiers"
-playerDir = "./data/players"
+teamsDir = "./data/teams"
 amplifierCount = len([name for name in os.listdir(amplifierDir)])
 amplifierName = []
-playerName = []
-playerData = {}
+teams = []
+output = {}
 
-activeDir = "./data/amplifiers/active"
-passiveDir = "./data/amplifiers/passive"
-activeCount = len([name for name in os.listdir(activeDir)])
-passiveCount = len([name for name in os.listdir(passiveDir)])
-activeName = []
-passiveName = []
+silverDir = "./data/amplifiers/silver"
+goldDir = "./data/amplifiers/gold"
+prismaticDir = "./data/amplifiers/prismatic"
+silverCount = len([name for name in os.listdir(silverDir)])
+goldCount = len([name for name in os.listdir(goldDir)])
+prismaticCount = len([name for name in os.listdir(prismaticDir)])
 
-for card in os.listdir(activeDir):
-    activeName.append(card)
+silvers = []
+golds = []
+prismatic = []
 
-for card in os.listdir(passiveDir):
-    passiveName.append(card)
+nodupe = {
+    1: [],
+    2: [],
+    3: [4, 5],
+    4: [3, 5],
+    5: [3, 4],
+    6: [],
+    7: [],
+    8: [27],
+    9: [],
+    10: [],
+    11: [],
+    12: [],
+    13: [],
+    14: [],
+    15: [16, 17],
+    16: [15, 17],
+    17: [15, 16],
+    18: [],
+    19: [],
+    20: [21, 22],
+    21: [20, 22],
+    22: [20, 21],
+    23: [24],
+    24: [23],
+    25: [26],
+    26: [25],
+    27: [8],
+    28: [29],
+    29: [28],
+    30: [],
+    31: [32, 33],
+    32: [31, 33],
+    33: [31, 32],
+    34: [],
+    35: [],
+    36: [],
+    37: [38, 39],
+    38: [37, 39],
+    39: [37, 38],
+    40: []
+}
 
-for player in os.listdir(playerDir):
-    path = player
-    player = player.split(sep="$")
-    playerName.append([player[1][:-4], player[0], path])
+for card in os.listdir(silverDir):
+    silvers.append(card)
 
+for card in os.listdir(goldDir):
+    golds.append(card)
 
-class Players:
+for card in os.listdir(prismaticDir):
+    prismatic.append(card)
+
+for team in os.listdir(teamsDir):
+    curPlayers = []
+    for player in os.listdir(f"{teamsDir}/{team}"):
+        player = player.split(sep="$")
+        curPlayers.append(Player(player[0], player[1][:-4], f"{team}/{player[0]}${player[1]}"))
+    rank, matchBlock, name = team.split(sep="$")
+    t = Team(name, curPlayers, rank, matchBlock)
+    teams.append(t)
+
+teams = sorted(teams)
+
+class Control:
 
     def __init__(self):
-        self.players = "./data/players"
-        self.playerCount = len([name for name in os.listdir(self.players)])
+        self.teams = teams
+        self.teamCount = len([name for name in os.listdir(teamsDir)])
         self.current = 1
 
-    def nextPlayer(self):
+    def next(self):
         clearCards()
-        if self.current >= self.playerCount:
+        if self.current >= self.teamCount:
             self.current = 1
             return self.current
         self.current += 1
         return self.current
 
-    def prevPlayer(self):
+    def prev(self):
         clearCards()
         if self.current <= 1:
-            self.current = self.playerCount
+            self.current = self.teamCount
             return self.current
         self.current -= 1
         return self.current
 
-    def getPlayerCount(self):
-        print(self.playerCount)
+    def getCount(self):
+        print(self.teamCount)
 
-    def getCurrentPlayer(self):
+    def getCurrent(self):
         return self.current
 
+    def getCurrentTeam(self):
+        return self.teams[self.current - 1]
 
-players = Players()
+
+control = Control()
 
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
@@ -84,41 +207,59 @@ background_image = tkinter.PhotoImage(file=background)
 background_label = tkinter.Label(image=background_image)
 background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+card_size = (int(728 / 2.2), int(895 / 2.2))
+
 image1 = Image.open(f"./data/Box.png")
-image1 = image1.resize((int(836 / 2.8), int(1077 / 2.8)))
+image1 = image1.resize(card_size)
 test1 = ImageTk.PhotoImage(image1)
 width, height = test1.width(), test1.height()
 
-label_image1 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image1.place(x=20, y=290)
+label_image1 = tkinter.Label(app, bg="#243953", width=width, height=height, image=test1)
+label_image1.place(x=90, y=220)
 
-label_image2 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image2.place(x=320, y=290)
+label_image2 = tkinter.Label(app, bg="#243953", width=width, height=height, image=test1)
+label_image2.place(x=460, y=220)
 
-label_image3 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image3.place(x=655, y=290)
-
-label_image4 = tkinter.Label(app, bg="#10172d", width=width, height=height, image=test1)
-label_image4.place(x=955, y=290)
+label_image3 = tkinter.Label(app, bg="#243953", width=width, height=height, image=test1)
+label_image3.place(x=840, y=220)
 
 
-currentPlayerIcon = Image.open(f"./data/players/{playerName[0][2]}")
-currentPlayerIcon = currentPlayerIcon.resize((int(150), int(150)))
-currentPlayerIcon = ImageTk.PhotoImage(currentPlayerIcon)
-width, height = currentPlayerIcon.width(), currentPlayerIcon.height()
+player1Icon = Image.open(f"./data/teams/{control.getCurrentTeam().players[0].icon}")
+player1Icon = player1Icon.resize((int(150), int(150)))
+player1Icon = ImageTk.PhotoImage(player1Icon)
+width, height = player1Icon.width(), player1Icon.height()
 
-label_playerIcon = tkinter.Label(app, bg="#10172d", width=width, height=height, image=currentPlayerIcon)
-label_playerIcon.place(x=220, y=27)
+label_player1Icon = tkinter.Label(app, bg="#243953", width=width, height=height, image=player1Icon)
+label_player1Icon.place(x=190, y=28)
 
-font = ("Crimson Pro", 16)
-label_playerName = tkinter.Label(app, bg="#10172d", text=playerName[0][0], fg="white", font=font, anchor=tkinter.CENTER)
-label_playerName.place(x=230, y=198)
+font = ("Crimson Pro", 20)
+label_player1Name = tkinter.Label(app, bg="#243953", text=control.getCurrentTeam().players[0].name, fg="white", font=font, anchor="w")
+label_player1Name.place(x=350, y=28)
 
-font_rank = ("Crimson Pro", 42)
-label_playerRank = tkinter.Label(app, width=2, height=1, bg="#10172d", text=playerName[0][1], fg="white", font=font_rank, anchor=tkinter.CENTER)
-label_playerRank.place(x=398, y=100)
+font_rank = ("Crimson Pro", 20)
+label_player1Rank = tkinter.Label(app, width=7, height=1, bg="#243953", text=f"#{control.getCurrentTeam().players[0].rank}", fg="white", font=font_rank, anchor="w")
+label_player1Rank.place(x=350, y=78)
+
+player2Icon = Image.open(f"./data/teams/{control.getCurrentTeam().players[1].icon}")
+player2Icon = player2Icon.resize((int(150), int(150)))
+player2Icon = ImageTk.PhotoImage(player2Icon)
+width, height = player2Icon.width(), player2Icon.height()
+
+label_player2Icon = tkinter.Label(app, bg="#243953", width=width, height=height, image=player2Icon)
+label_player2Icon.place(x=760, y=28)
+
+font = ("Crimson Pro", 20)
+label_player2Name = tkinter.Label(app, bg="#243953", text=control.getCurrentTeam().players[1].name, fg="white", font=font, justify="right", anchor="e")
+label_player2Name.place(x=550, y=28, width=200)
+
+font_rank = ("Crimson Pro", 20)
+label_player2Rank = tkinter.Label(app, width=7, height=1, bg="#243953", text=f"#{control.getCurrentTeam().players[1].rank}", fg="white", font=font_rank, justify="right", anchor="e")
+label_player2Rank.place(x=550, y=78, width=200)
 
 
+font = ("Crimson Pro", 20)
+label_teamName = tkinter.Label(app, bg="#243953", text=f"{control.getCurrentTeam().name} | #{control.getCurrentTeam().rank}", fg="white", font=font, justify="center", anchor=tkinter.CENTER)
+label_teamName.place(x=380, y=130, width=350)
 def clearCards():
     box = Image.open(f"./data/Box.png")
     clear = ImageTk.PhotoImage(box)
@@ -128,36 +269,43 @@ def clearCards():
     label_image2.image = clear
     label_image3.configure(image=clear)
     label_image3.image = clear
-    label_image4.configure(image=clear)
-    label_image4.image = clear
-
 
 
 def buttonNext():
     buttonSound()
-    cur = players.nextPlayer() - 1
-    updateCurrentPlayer(cur)
-    print(f"Current Player: {playerName[cur][0]}, #{cur}")
+    cur = control.next() - 1
+    updateCurrentTeam(cur)
 
 
 def buttonPrev():
     buttonSound()
-    cur = players.prevPlayer() - 1
-    updateCurrentPlayer(cur)
-    print(f"Current Player: {playerName[cur][0]}, #{cur}")
+    cur = control.prev() - 1
+    updateCurrentTeam(cur)
 
 
-def updateCurrentPlayer(num):
-    newPlayer = playerName[num][0]
-    newPlayerIcon = Image.open(f"./data/players/{playerName[num][2]}")
+def updateCurrentTeam(num):
+    currentTeam = teams[num]
+    p1 = currentTeam.players[0]
+    p2 = currentTeam.players[1]
+    newPlayerIcon = Image.open(f"./data/teams/{p1.icon}")
     newPlayerIcon = newPlayerIcon.resize((int(150), int(150)))
     newPlayerIcon = ImageTk.PhotoImage(newPlayerIcon)
 
-    label_playerIcon.configure(image=newPlayerIcon)
-    label_playerIcon.image = newPlayerIcon
+    label_player1Icon.configure(image=newPlayerIcon)
+    label_player1Icon.image = newPlayerIcon
+    label_player1Name.configure(text=p1.name)
+    label_player1Rank.configure(text=f"#{p1.rank}")
 
-    label_playerName.configure(text=newPlayer)
-    label_playerRank.configure(text=playerName[num][1])
+    newPlayerIcon = Image.open(f"./data/teams/{p2.icon}")
+    newPlayerIcon = newPlayerIcon.resize((int(150), int(150)))
+    newPlayerIcon = ImageTk.PhotoImage(newPlayerIcon)
+
+    label_player2Icon.configure(image=newPlayerIcon)
+    label_player2Icon.image = newPlayerIcon
+    label_player2Name.configure(text=p2.name)
+    label_player2Rank.configure(text=f"#{p2.rank}")
+
+    label_teamName.configure(text=f"{control.getCurrentTeam().name} | #{control.getCurrentTeam().rank}")
 
 
 def fadeImage(img1, img2, label):
@@ -171,79 +319,73 @@ def fadeImage(img1, img2, label):
 
 def buttonRoll():
     buttonSound()
-    activeTotal = list(range(0, activeCount))
-    passiveTotal = list(range(0, passiveCount))
-    random.shuffle(activeTotal)
-    random.shuffle(passiveTotal)
-    active1 = activeTotal[0]
-    active2 = activeTotal[1]
-    passive1 = passiveTotal[0]
-    passive2 = passiveTotal[1]
+    random.shuffle(silvers)
+    random.shuffle(golds)
+    random.shuffle(prismatic)
+    tiersPath = {"Silver": silvers, "Gold": golds, "Prismatic": prismatic}
 
-    activeResult = [active1, active2]
-    passiveResult = [passive1, passive2]
+    tier1 = mb.getAmps(control.getCurrentTeam().matchBlock)[0]
+    tier2 = mb.getAmps(control.getCurrentTeam().matchBlock)[1]
+    tier3 = mb.getAmps(control.getCurrentTeam().matchBlock)[2]
+    # Cheese way to randomise, since not checking if any tiers are duped
+    amp1 = tiersPath[tier1][0]
+    amp2 = tiersPath[tier2][1]
+    amp3 = tiersPath[tier3][2]
+    dupes = nodupe[int(amp1[:-4])] + nodupe[int(amp2[:-4])] + nodupe[int(amp3[:-4])]
 
-    saveRoll(activeResult, passiveResult)
+    while int(amp1[:-4]) in dupes or int(amp2[:-4]) in dupes or int(amp3[:-4]) in dupes:
+        random.shuffle(silvers)
+        random.shuffle(golds)
+        random.shuffle(prismatic)
+        amp1 = tiersPath[tier1][0]
+        amp2 = tiersPath[tier2][1]
+        amp3 = tiersPath[tier3][2]
+        dupes = nodupe[int(amp1[:-4])] + nodupe[int(amp2[:-4])] + nodupe[int(amp3[:-4])]
 
-    count = 1
-    for i in activeResult:
-        image = Image.open(f"./data/amplifiers/active/{activeName[i]}")
-        image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
-        imageFinal = ImageTk.PhotoImage(image)
-        if count == 1:
-            label_image1.configure(image=imageFinal)
-            label_image1.image = imageFinal
-        elif count == 2:
-            label_image2.configure(image=imageFinal)
-            label_image2.image = imageFinal
-        count += 1
+    amps = [amp1, amp2, amp3]
+    saveRoll(amps)
 
-    count = 1
-    for i in passiveResult:
-        image = Image.open(f"./data/amplifiers/passive/{passiveName[i]}")
-        image = image.resize((int(836 / 2.8), int(1077 / 2.8)))
-        imageFinal = ImageTk.PhotoImage(image)
-        if count == 1:
-            label_image3.configure(image=imageFinal)
-            label_image3.image = imageFinal
-        elif count == 2:
-            label_image4.configure(image=imageFinal)
-            label_image4.image = imageFinal
-        count += 1
+    image = Image.open(f"./data/amplifiers/{tier1}/{amp1}")
+    image = image.resize(card_size)
+    imageFinal = ImageTk.PhotoImage(image)
+    label_image1.configure(image=imageFinal)
+    label_image1.image = imageFinal
 
+    image = Image.open(f"./data/amplifiers/{tier2}/{amp2}")
+    image = image.resize(card_size)
+    imageFinal = ImageTk.PhotoImage(image)
+    label_image2.configure(image=imageFinal)
+    label_image2.image = imageFinal
 
-def saveRoll(active, passive):
-    text = f"Player {playerName[players.getCurrentPlayer() - 1][0]}, Amplifiers:"
-    for x in active:
-        text += f" {activeName[x][:-4]}"
-    for x in passive:
-        text += f" {passiveName[x][:-4]}"
-    print(text)
-    playerData[players.getCurrentPlayer() - 1] = [playerName[players.getCurrentPlayer() - 1][0], active, passive]
+    image = Image.open(f"./data/amplifiers/{tier3}/{amp3}")
+    image = image.resize(card_size)
+    imageFinal = ImageTk.PhotoImage(image)
+    label_image3.configure(image=imageFinal)
+    label_image3.image = imageFinal
+
+def saveRoll(amps):
+    output[control.getCurrentTeam().name] = amps
     saveOutput()
 
 
 def saveOutput():
-    header = ["Player Num", "Player Name", "Active #1", "Active #2", "Passive #1", "Passive #2"]
-    with open(output, "r+", newline='') as file:
+    header = ["Team", "Amp #1", "Amp #2", "Amp #3"]
+    with open(outputPath, "w", newline='') as file:
         writer = csv.writer(file)
-
         writer.writerow(header)
-
-        for item in playerData:
-            print(playerData[item])
-            playerFormatted = [item, playerData[item][0], activeName[playerData[item][1][0]][:-4], activeName[playerData[item][1][1]][:-4], passiveName[playerData[item][2][0]][:-4], passiveName[playerData[item][2][1]][:-4]]
-            writer.writerow(playerFormatted)
-
+        # Format and write the row for the current team
+        for team in output:
+            team_data = [team]
+            for amp in output[team]:
+                team_data.append(amp[:-4])
+            writer.writerow(team_data)
     file.close()
-
 
 def buttonSound():
     threading.Thread(target=playsound, args=("./data/button_sound.mp3",), daemon=True).start()
 
 
 background_image_frames = []
-
 
 def loadAnimatedBg():
     print("Processing animated background")
@@ -277,19 +419,19 @@ else:
 
 
 # Previous
-buttonImage = customtkinter.CTkImage(Image.open("./data/button_prev.png"), size=(106, 40))
-buttonPrev = customtkinter.CTkButton(master=app, command=buttonPrev, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
-buttonPrev.place(width=118, height=44, relx=0.1165, rely=0.07, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_prev.png"), size=(80, 30))
+buttonPrev = customtkinter.CTkButton(master=app, command=buttonPrev, corner_radius=0, text="", fg_color="#243953", hover_color="#243953", image=buttonImage)
+buttonPrev.place(width=86, height=34, relx=0.1, rely=0.06, anchor=tkinter.CENTER)
 
 # Next
-buttonImage = customtkinter.CTkImage(Image.open("./data/button_next.png"), size=(106, 40))
-buttonNext = customtkinter.CTkButton(master=app, command=buttonNext, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
-buttonNext.place(width=118, height=44, relx=0.1165, rely=0.185, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_next.png"), size=(80, 30))
+buttonNext = customtkinter.CTkButton(master=app, command=buttonNext, corner_radius=0, text="", fg_color="#243953", hover_color="#243953", image=buttonImage)
+buttonNext.place(width=86, height=34, relx=0.1, rely=0.1475, anchor=tkinter.CENTER)
 
 # Roll
-buttonImage = customtkinter.CTkImage(Image.open("./data/button_roll.png"), size=(106, 40))
-buttonRoll = customtkinter.CTkButton(master=app, command=buttonRoll, corner_radius=0, text="", fg_color="#10172d", hover_color="#10172d", image=buttonImage)
-buttonRoll.place(width=118, height=44, relx=0.1165, rely=0.3, anchor=tkinter.CENTER)
+buttonImage = customtkinter.CTkImage(Image.open("./data/button_roll.png"), size=(80, 30))
+buttonRoll = customtkinter.CTkButton(master=app, command=buttonRoll, corner_radius=0, text="", fg_color="#243953", hover_color="#243953", image=buttonImage)
+buttonRoll.place(width=86, height=34, relx=0.1, rely=0.235, anchor=tkinter.CENTER)
 
 
 app.mainloop()
